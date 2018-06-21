@@ -324,7 +324,7 @@ struct matrix * init_identity_matrix(int m)
  * @Param m: Function extracts the m'th column as a vector
  * @Return: Vector pointer 
  */
- struct vector * vect_from_matrix(struct matrix * input, int n)
+ struct vector * vector_from_matrix(struct matrix * input, int n)
  {
 	 
 	struct vector * res_vector; 
@@ -352,9 +352,142 @@ struct matrix * init_identity_matrix(int m)
 /* 
  * @Param v1: Vector 1
  * @Param v1: Vector 2
+ * @Return: result vector = v1 - v2 
+ */
+struct vector * subtract_vector(struct vector * v1, struct vector * v2)
+{
+	
+	struct vector * res_vector; 
+	
+	res_vector = allocate_vector_mem(v1->dim);
+	
+		
+	if(res_vector == 0)
+	{
+		return 0;
+	}
+	
+	if(v1->dim != v2->dim)
+	{
+		printf("Vectors not same dimension\n");
+		return 0;
+	}
+	
+	for(int i = 0; i < v1->dim; i++)
+	{
+		 
+	 res_vector->vector_mem[i] = v1->vector_mem[i] - v2->vector_mem[i];
+		 
+	}
+	 	 
+	return res_vector;
+	
+	
+}
+
+/* 
+ * @Param v1: Vector 1
+ * @Param v1: Vector 2
+ * @Return: result vector = v1 + v2 
+ */
+struct vector * add_vector(struct vector * v1, struct vector * v2)
+{
+	
+	struct vector * res_vector; 
+	
+	res_vector = allocate_vector_mem(v1->dim);
+	
+		
+	if(res_vector == 0)
+	{
+		return 0;
+	}
+	
+	if(v1->dim != v2->dim)
+	{
+		printf("Vectors not same dimension\n");
+		return 0;
+	}
+	
+	for(int i = 0; i < v1->dim; i++)
+	{
+		 
+	 res_vector->vector_mem[i] = v1->vector_mem[i] + v2->vector_mem[i];
+		 
+	}
+	 	 
+	return res_vector;
+	
+}
+
+/* 
+ * @Param v1: Vector 1
+ * @Param s: Scale factor
+ * @Return: v1 * s 
+ */
+struct vector * scale_vector(struct vector * v1, double s)
+{
+	
+	struct vector * res_vector; 
+	
+	res_vector = allocate_vector_mem(v1->dim);
+	
+		
+	if(res_vector == 0)
+	{
+		return 0;
+	}
+	
+	
+	for(int i = 0; i < v1->dim; i++)
+	{
+		 
+	 res_vector->vector_mem[i] = v1->vector_mem[i] * s;
+		 
+	}
+	 	 
+	return res_vector;
+	
+}
+
+
+/* 
+ * @Param v1: Vector 1
+ * @Param v1: Vector 2
+ * @Return: Projection of v2 onto v1
+ */
+struct vector * project_vector(struct vector * v1, struct vector * v2)
+{
+	struct vector * temp_vector;
+	struct vector * res_vector;
+	double dot_product;
+	
+	
+	//Projection og v2 onto v1: |v2| * cos(phi)
+	//Cos(phi) can be foundfrom dot product definition
+	// v1 dot v2 = |v1| * |v2| * cos(phi)
+	// v1 dot v2 / ( |v1| * |v2| )= cos(phi)
+	// |v2| * v1 dot 2 / ( |v1| * |v2| ) - Where |v2| cancels
+	// v1 dot v2 / ( |v1| ) - here the lenght squared of v1 is v1' dot v1 where"'" is the transpose
+	
+	dot_product = vector_dot_product(v1, v1);
+	
+	temp_vector = scale_vector(v1, 1/dot_product);
+	
+	//Unit length v1 dot v2
+	dot_product = vector_dot_product(temp_vector, v2);
+		
+	res_vector = scale_vector(v1, dot_product);	
+	
+	return res_vector;
+}
+
+/* 
+ * @Param v1: Vector 1
+ * @Param v1: Vector 2
  * @Return: Dot product of vector 1 and vector 2 
  */
- double vect_dot_product(struct vector * v1, struct vector * v2)
+ double vector_dot_product(struct vector * v1, struct vector * v2)
  {
 	 
 	double dot_product = 0; 

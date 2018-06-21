@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "linalg.h"
 
 int test1_matrix_memory_leak(int debug)
@@ -199,7 +200,7 @@ int test5_extraction_vector_test(int debug)
 	vector2->vector_mem[1] = 0;
 	
 	
-	vector1 = vect_from_matrix(matrix1, column_number);	
+	vector1 = vector_from_matrix(matrix1, column_number);	
 	
 	if(debug)
 	{
@@ -219,6 +220,7 @@ int test5_extraction_vector_test(int debug)
 	return 1;
 	
 }
+
 
 int test6_vector_dot_product_test(int debug)
 {
@@ -252,7 +254,7 @@ int test6_vector_dot_product_test(int debug)
 	vector2->vector_mem[2] = 0.5;
 	
 	
-	dot_product = vect_dot_product(vector1, vector2);
+	dot_product = vector_dot_product(vector1, vector2);
 	
 	if(debug)
 	{
@@ -282,6 +284,64 @@ int test6_vector_dot_product_test(int debug)
 }
 
 
+int test7_vector_projection_test(int debug)
+{
+	
+	struct vector * vector1;
+	struct vector * vector2;
+	struct vector * vector3;
+	
+	if(debug)
+	{
+		printf("Starting vector projection test\n");
+	}
+	
+	vector1 = allocate_vector_mem(2);
+	if(vector1 == 0)
+	{
+		printf("Allocation of vector memory failed\n");
+		return 0;
+	}
+	
+	vector1->vector_mem[0] = 3;
+	vector1->vector_mem[1] = 0;
+	
+
+	
+	vector2 = allocate_vector_mem(2);
+	if(vector2 == 0)
+	{
+		printf("Allocation of vector memory failed\n");
+		return 0;
+	}
+	
+	vector2->vector_mem[0] = 2;
+	vector2->vector_mem[1] = 2;
+	
+	vector3 =project_vector(vector1, vector2);
+	
+	
+	if(debug)
+	{
+		printf("Projection of vector:\n\n");
+		
+		print_vector(vector2);
+	
+		printf("Onto vector:\n\n");
+		
+		print_vector(vector1);
+	
+		printf("Results in:\n\n");	
+		
+		print_vector(vector3);
+		
+	
+	}
+	
+	return 1;
+}
+
+
 int main(int argc, char **argv)
 {
 	
@@ -307,7 +367,7 @@ int main(int argc, char **argv)
 	}
 	*/
 	
-	
+	/*
 	if(test3_matrix_compare(1))
 	{
 		printf("Matrix compare test succeded\n");
@@ -346,6 +406,20 @@ int main(int argc, char **argv)
 	{
 		printf("Dot product test failed\n");
 	}
+	*/
+	
+	if(test7_vector_projection_test(1))
+	{
+		printf("Vector projection test succeded\n");
+	}
+	else
+	{
+		printf("Vector projection test failed\n");
+	}
+	*/
+	
+	
+	
 	
 	
 	return 1;
