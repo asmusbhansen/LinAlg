@@ -43,16 +43,15 @@ void print_vector(struct vector * a);
 struct matrix * init_identity_matrix(int m);
 struct matrix * transpose_matrix(struct matrix * input);
 struct vector * vector_from_matrix(struct matrix * input, int n);
-//Vect to matrix
-struct vector * subtract_vector(struct vector * v1, struct vector * v2);
-struct vector * add_vector(struct vector * v1, struct vector * v2);
+int vector_to_matrix(struct matrix * input_matrix, struct vector * input_vector, int n);
+int subtract_vector(struct vector * v1, struct vector * v2);
+int add_vector(struct vector * v1, struct vector * v2);
+void unit_length_vector(struct vector * v1);
 struct vector * scale_vector(struct vector * v1, double s);
-
 struct vector * project_vector(struct vector * v1, struct vector * v2);
-
-
 double vector_dot_product(struct vector * v1, struct vector * v2);
-int qr_matrix(struct matrix * input, struct matrix * q, struct matrix * r);
+struct matrix * gs_orthogonalization(struct matrix * input_matrix);
+int qr_matrix(struct matrix * input, struct matrix ** q, struct matrix ** r);
 int svd_matrix(struct matrix * input, struct matrix * s, struct matrix * v, struct matrix * d);
 int eig_matrix(struct matrix * input, struct matrix * l, struct matrix * v);
 

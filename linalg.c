@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "linalg.h"
 
 /* 
@@ -108,7 +109,7 @@ struct matrix * allocate_matrix_mem(int m, int n)
 	
 	if(mtrix == 0)
 	{
-		//printf("Failed allocation of matrix struc memory\n");
+		//printf("Failed allocation of matrix struct memory\n");
 		return 0;
 	}
 	
@@ -184,10 +185,13 @@ void free_matrix_mem(struct matrix * a)
 	
 	for(int i = 0; i < a->rows; i++)
 	{
+		//For each row, free memory for each column entry
 		free(a->matrix_mem[i]);
 	}
 	
 	free(a->matrix_mem);
+	
+	free(a);
 
 }
 
@@ -201,6 +205,8 @@ void free_vector_mem(struct vector * a)
 	
 	free(a->vector_mem);
 
+	free(a);
+		
 }
 
 
@@ -350,22 +356,39 @@ struct matrix * init_identity_matrix(int m)
 }
 
 /* 
+ * @Param input_matrix: Input matrix
+ * @Param input_vector: Input vector
+ * @Param n: Function puts input vector into the n'th column of the input matrix
+ * @Return: 1 for success, 0 for fail
+ */
+int vector_to_matrix(struct matrix * input_matrix, struct vector * input_vector, int n)
+{
+	 
+	if(input_matrix->rows != input_vector->dim)
+	{
+		printf("Vector and matrix not in same dimension\n");
+		return 0;
+	} 
+	 
+	for(int i = 0; i < input_matrix->rows; i++)
+	{
+	 
+	 input_matrix->matrix_mem[i][n] = input_vector->vector_mem[i];
+		 
+	}
+	 	 
+	return 1;
+ 
+}
+
+
+/* 
  * @Param v1: Vector 1
  * @Param v1: Vector 2
- * @Return: result vector = v1 - v2 
+ * @Return: 1 if success, 0 if fail 
  */
-struct vector * subtract_vector(struct vector * v1, struct vector * v2)
+int subtract_vector(struct vector * v1, struct vector * v2)
 {
-	
-	struct vector * res_vector; 
-	
-	res_vector = allocate_vector_mem(v1->dim);
-	
-		
-	if(res_vector == 0)
-	{
-		return 0;
-	}
 	
 	if(v1->dim != v2->dim)
 	{
@@ -376,11 +399,11 @@ struct vector * subtract_vector(struct vector * v1, struct vector * v2)
 	for(int i = 0; i < v1->dim; i++)
 	{
 		 
-	 res_vector->vector_mem[i] = v1->vector_mem[i] - v2->vector_mem[i];
+	 v1->vector_mem[i] = v1->vector_mem[i] - v2->vector_mem[i];
 		 
 	}
 	 	 
-	return res_vector;
+	return 1;
 	
 	
 }
@@ -388,20 +411,10 @@ struct vector * subtract_vector(struct vector * v1, struct vector * v2)
 /* 
  * @Param v1: Vector 1
  * @Param v1: Vector 2
- * @Return: result vector = v1 + v2 
+ * @Return: 1 if success, 0 if fail 
  */
-struct vector * add_vector(struct vector * v1, struct vector * v2)
+int add_vector(struct vector * v1, struct vector * v2)
 {
-	
-	struct vector * res_vector; 
-	
-	res_vector = allocate_vector_mem(v1->dim);
-	
-		
-	if(res_vector == 0)
-	{
-		return 0;
-	}
 	
 	if(v1->dim != v2->dim)
 	{
@@ -412,12 +425,35 @@ struct vector * add_vector(struct vector * v1, struct vector * v2)
 	for(int i = 0; i < v1->dim; i++)
 	{
 		 
-	 res_vector->vector_mem[i] = v1->vector_mem[i] + v2->vector_mem[i];
+	 v1->vector_mem[i] = v1->vector_mem[i] + v2->vector_mem[i];
 		 
 	}
 	 	 
-	return res_vector;
+	return 1;
 	
+}
+
+/* 
+ * @Param v1: Vector which is scled to unit length
+ * @Return: None 
+ */
+void unit_length_vector(struct vector * v1)
+{
+
+	double vector_length = 0;
+
+	//Compute vector length
+	for(int k = 0; k < v1->dim; k++)
+	{
+		vector_length += v1->vector_mem[k] * v1->vector_mem[k];	
+	}
+	
+	//Divide vector by vector length
+	for(int k = 0; k < v1->dim; k++)
+	{
+		v1->vector_mem[k] = v1->vector_mem[k] / sqrt(vector_length);	
+	}
+
 }
 
 /* 
@@ -468,13 +504,13 @@ struct vector * project_vector(struct vector * v1, struct vector * v2)
 	// v1 dot v2 = |v1| * |v2| * cos(phi)
 	// v1 dot v2 / ( |v1| * |v2| )= cos(phi)
 	// |v2| * v1 dot 2 / ( |v1| * |v2| ) - Where |v2| cancels
-	// v1 dot v2 / ( |v1| ) - here the lenght squared of v1 is v1' dot v1 where"'" is the transpose
+	// v1 dot v2 / ( v1' * v1 ) - here the lenght squared of v1 is v1' dot v1 where"'" is the transpose
+	//
 	
 	dot_product = vector_dot_product(v1, v1);
 	
 	temp_vector = scale_vector(v1, 1/dot_product);
-	
-	//Unit length v1 dot v2
+
 	dot_product = vector_dot_product(temp_vector, v2);
 		
 	res_vector = scale_vector(v1, dot_product);	
@@ -508,6 +544,98 @@ struct vector * project_vector(struct vector * v1, struct vector * v2)
 	return dot_product;
  
  } 
+ 
+ /* 
+ * @Param input: Function computes the an orthogonal basis of the matrix by the Gram_Schmidt process
+ * @Return: Matrix with an orthogonal basis in the first columns 
+ */
+ struct matrix * gs_orthogonalization(struct matrix * input_matrix)
+ {
+	 
+	struct matrix * result_matrix;
+	struct vector * u;
+	struct vector * v;
+	struct vector * a;
+	struct vector * proj_vector;
+	double vector_length;
+	
+	//Initialize a matrix with the same dimensions as the input
+	result_matrix = allocate_matrix_mem(input_matrix->rows,input_matrix->cols);
+	if(result_matrix == 0)
+	{
+		printf("Allocation of matrix memory failed\n");
+		return 0;
+	}
+		
+	//Copy the first vector from the input matrix to the result matrix
+	u = vector_from_matrix(input_matrix,0);
+	if(u == 0)
+	{
+		printf("Allocation of vector memory failed\n");
+		return 0;
+	}
+	
+	//Make vector unit length
+	unit_length_vector(u);
+	
+	vector_to_matrix(result_matrix, u, 0);
+	free_vector_mem(u);
+		
+	for(int i = 1; i < input_matrix->cols; i++)
+	{
+		
+		v = vector_from_matrix(input_matrix, i);
+		if(v == 0)
+		{
+			return 0;
+		}
+		
+		u = vector_from_matrix(input_matrix, i);
+		if(u == 0)
+		{
+			return 0;
+		}
+			
+		for(int j = 0; j < i; j++)
+		{
+		
+			a = vector_from_matrix(result_matrix, j);
+			if(a == 0)
+			{
+				return 0;
+			}
+			
+			proj_vector = project_vector(a, v);
+			if(u == 0)
+			{
+				return 0;
+			}
+			
+			if(!subtract_vector(u, proj_vector))
+			{
+				return 0;
+			}
+			
+			free_vector_mem(proj_vector);
+			
+			free_vector_mem(a);
+						
+		}
+
+		//Make vector unit length
+		unit_length_vector(u);
+			
+		vector_to_matrix(result_matrix, u, i);
+			
+		free_vector_mem(u);
+		
+		free_vector_mem(v);
+				
+	}
+
+	return result_matrix;
+	 
+ }
 
 /* 
  * @Param input: Function computes the qr factorization of this matrix
@@ -515,12 +643,50 @@ struct vector * project_vector(struct vector * v1, struct vector * v2)
  * @Param R: R matrix in the QR factorization
  * @Return: 1 if succesfull, 0 if not 
  */
- int qr_matrix(struct matrix * input, struct matrix * q, struct matrix * r)
+ int qr_matrix(struct matrix * input, struct matrix ** q, struct matrix ** r)
  {
-	 
-	 
-	 
-	 return 1;
+	
+	struct matrix * q_inv;
+	struct matrix * result_matrix;
+	
+	//The QR decomposistion is obtained by the fact that Q is an orthonormal matrix
+	// Q' * Q = I
+	// A = Q * R
+	// Q' * A = Q' * Q * R
+	// Q' * A = R
+	
+	//Find q
+	*q = gs_orthogonalization(input);
+	if(*q == 0)
+	{
+		printf("Orthogonalization failed\n");
+		return 0;
+	}
+	
+	q_inv = transpose_matrix(*q);
+	if(q_inv == 0)
+	{
+		printf("Allocation of matrix memory failed\n");
+		return 0;
+	}
+	
+	*r = mult_matrix(q_inv, input);
+	if(*r == 0)
+	{
+		printf("Allocation of matrix memory failed\n");
+		return 0;
+	}
+	
+	
+	result_matrix = mult_matrix(*q, *r);
+	
+	printf("Q * R:\n\n");
+	
+	print_matrix(result_matrix);
+	
+	//To do: Free all allocated memory
+	
+	return 1;
  }
  
  

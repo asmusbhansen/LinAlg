@@ -1,24 +1,6 @@
 /*
  * main.c
  * 
- * Copyright 2018 Asmus <asmus@asmus-ThinkPad-T440p>
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301, USA.
- * 
- * 
  */
 
 #include <stdio.h>
@@ -318,7 +300,7 @@ int test7_vector_projection_test(int debug)
 	vector2->vector_mem[0] = 2;
 	vector2->vector_mem[1] = 2;
 	
-	vector3 =project_vector(vector1, vector2);
+	vector3 = project_vector(vector1, vector2);
 	
 	
 	if(debug)
@@ -341,6 +323,104 @@ int test7_vector_projection_test(int debug)
 	return 1;
 }
 
+int test8_gs_orthogonalization_test(int debug)
+{
+	struct matrix * matrix1;
+	struct matrix * result_matrix;
+
+	matrix1 = allocate_matrix_mem(3,3);
+	if(matrix1 == 0)
+	{
+		printf("Allocation of vector memory failed\n");
+		return 0;
+	}
+	
+	matrix1->matrix_mem[0][0] = 1;
+	matrix1->matrix_mem[1][0] = 4;
+	matrix1->matrix_mem[2][0] = 0;
+	matrix1->matrix_mem[0][1] = 0;
+	matrix1->matrix_mem[1][1] = 1;
+	matrix1->matrix_mem[2][1] = 0;
+	matrix1->matrix_mem[0][2] = -1;
+	matrix1->matrix_mem[1][2] = 0;
+	matrix1->matrix_mem[2][2] = 1;
+	
+	result_matrix = gs_orthogonalization(matrix1);
+	
+	if(debug)
+	{
+		printf("Input matrix:\n\n");
+		
+		print_matrix(matrix1);
+		
+		printf("Output orthogonal matrix:\n\n");
+		
+		print_matrix(result_matrix);
+	}
+	
+	return 1;
+	
+}
+
+int test9_qr_decomposistion_test(int debug)
+{
+	
+	struct matrix * matrix1;
+	struct matrix * qr;
+	struct matrix * q;
+	struct matrix * r;
+		
+	matrix1 = allocate_matrix_mem(3,3);
+	if(matrix1 == 0)
+	{
+		printf("Allocation of matrix memory failed\n");
+		return 0;
+	}
+	
+	matrix1->matrix_mem[0][0] = 1;
+	matrix1->matrix_mem[1][0] = 4;
+	matrix1->matrix_mem[2][0] = 0;
+	matrix1->matrix_mem[0][1] = 0;
+	matrix1->matrix_mem[1][1] = 1;
+	matrix1->matrix_mem[2][1] = 0;
+	matrix1->matrix_mem[0][2] = -1;
+	matrix1->matrix_mem[1][2] = 0;
+	matrix1->matrix_mem[2][2] = 1;
+
+	if(!qr_matrix(matrix1, &q, &r))
+	{
+		printf("QR Decomposistion failed\n\n");
+		return 0;
+	}
+	
+	//q_inv = transpose_matrix(q);
+	
+	if(debug)
+	{
+		
+		printf("Input matrix:\n\n");
+		
+		print_matrix(matrix1);
+		
+		printf("Q matrix:\n\n");
+		
+		print_matrix(q);
+		
+		printf("R matrix:\n\n");
+	
+		print_matrix(r);
+		
+		printf("Q * R:\n\n");
+		
+		qr = mult_matrix(q,r);
+		
+		print_matrix(qr);
+		
+	}
+	
+	return 1;
+
+}
 
 int main(int argc, char **argv)
 {
@@ -408,6 +488,7 @@ int main(int argc, char **argv)
 	}
 	*/
 	
+	/*
 	if(test7_vector_projection_test(1))
 	{
 		printf("Vector projection test succeded\n");
@@ -416,8 +497,26 @@ int main(int argc, char **argv)
 	{
 		printf("Vector projection test failed\n");
 	}
+	
+	
+	if(test8_gs_orthogonalization_test(1))
+	{
+		printf("Vector orthogonalization test succeded\n");
+	}
+	else
+	{
+		printf("Vector orthogonalization test failed\n");
+	}
 	*/
 	
+	if(test9_qr_decomposistion_test(1))
+	{
+		printf("Vector qr decomposistion test succeded\n");
+	}
+	else
+	{
+		printf("Vector qr decomposistion test failed\n");
+	}
 	
 	
 	
